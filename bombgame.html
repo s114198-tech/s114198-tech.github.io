@@ -2,168 +2,143 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
+    <title>炸彈擊中目標小遊戲</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>炸彈擊中目標遊戲</title>
-    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 90%;
+            max-width: 600px;
+            height: 400px;
+            margin: 20px auto;
+            background-color: #ddd;
+            border: 3px solid #333;
+            overflow: hidden;
+        }
+
+        #target {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            border-radius: 50%;
+        }
+
+        #bomb {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: orange;
+            border-radius: 50%;
+            display: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #score {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>炸彈擊中目標遊戲</h1>
-        <p>按下「丟炸彈」開始遊戲，擊中目標得分！</p>
-    </header>
+
+    <h1>💣 炸彈擊中目標小遊戲</h1>
+    <p>點擊按鈕丟炸彈，擊中紅色目標得分！</p>
 
     <div id="gameArea">
         <div id="target"></div>
-        <div id="bomb" class="hidden"></div>
+        <div id="bomb"></div>
     </div>
 
-    <footer>
-        <button id="throwBombBtn">丟炸彈</button>
-        <p id="score">得分: 0</p>
-    </footer>
+    <button onclick="throwBomb()">丟炸彈</button>
+    <div id="score">得分：0</div>
 
-    <script src="script.js"></script>
+    <script>
+        const gameArea = document.getElementById("gameArea");
+        const target = document.getElementById("target");
+        const bomb = document.getElementById("bomb");
+        const scoreText = document.getElementById("score");
+
+        let score = 0;
+        let throwing = false;
+
+        function randomTargetPosition() {
+            const maxX = gameArea.clientWidth - 50;
+            const maxY = gameArea.clientHeight - 50;
+
+            const x = Math.random() * maxX;
+            const y = Math.random() * maxY;
+
+            target.style.left = x + "px";
+            target.style.top = y + "px";
+        }
+
+        function throwBomb() {
+            if (throwing) return;
+            throwing = true;
+
+            bomb.style.display = "block";
+            bomb.style.left = (gameArea.clientWidth / 2 - 10) + "px";
+            bomb.style.top = "0px";
+
+            let bombY = 0;
+
+            const interval = setInterval(() => {
+                bombY += 8;
+                bomb.style.top = bombY + "px";
+
+                const bombRect = bomb.getBoundingClientRect();
+                const targetRect = target.getBoundingClientRect();
+
+                if (
+                    bombRect.right > targetRect.left &&
+                    bombRect.left < targetRect.right &&
+                    bombRect.bottom > targetRect.top &&
+                    bombRect.top < targetRect.bottom
+                ) {
+                    score++;
+                    scoreText.textContent = "得分：" + score;
+                    clearInterval(interval);
+                    bomb.style.display = "none";
+                    throwing = false;
+                    randomTargetPosition();
+                }
+
+                if (bombY > gameArea.clientHeight) {
+                    clearInterval(interval);
+                    bomb.style.display = "none";
+                    throwing = false;
+                }
+            }, 20);
+        }
+
+        // 遊戲開始時先放一個目標
+        randomTargetPosition();
+    </script>
+
 </body>
 </html>
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    text-align: center;
-}
-
-header {
-    background-color: #4CAF50;
-    color: white;
-    padding: 20px;
-}
-
-#gameArea {
-    position: relative;
-    width: 100%;
-    height: 500px;
-    background-color: #e0e0e0;
-    overflow: hidden;
-    border: 2px solid #333;
-    margin-top: 20px;
-}
-
-#target {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background-color: red;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    transition: top 0.5s, left 0.5s;
-}
-
-#bomb {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background-color: yellow;
-    border-radius: 50%;
-    top: -30px; /* Initial off-screen */
-    left: 50%;
-    transform: translateX(-50%);
-    transition: top 1s;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-footer {
-    margin-top: 20px;
-}
-
-.hidden {
-    display: none;
-}
-
-// 初始化遊戲狀態
-let score = 0;
-let bombThrown = false;
-
-// 取得 HTML 元素
-const throwBombBtn = document.getElementById('throwBombBtn');
-const target = document.getElementById('target');
-const bomb = document.getElementById('bomb');
-const scoreDisplay = document.getElementById('score');
-const gameArea = document.getElementById('gameArea');
-
-// 目標隨機位置移動
-function moveTarget() {
-    const gameAreaWidth = gameArea.offsetWidth;
-    const gameAreaHeight = gameArea.offsetHeight;
-
-    const randomX = Math.random() * (gameAreaWidth - 50); // 隨機水平位置
-    const randomY = Math.random() * (gameAreaHeight - 50); // 隨機垂直位置
-
-    target.style.left = `${randomX}px`;
-    target.style.top = `${randomY}px`;
-}
-
-// 丟炸彈並處理目標擊中邏輯
-function throwBomb() {
-    if (bombThrown) return;
-
-    bombThrown = true;
-    bomb.classList.remove('hidden');
-    bomb.style.top = '50px'; // 起始位置在上方
-
-    const targetRect = target.getBoundingClientRect();
-    const bombRect = bomb.getBoundingClientRect();
-
-    const bombInterval = setInterval(() => {
-        const bombY = parseInt(bomb.style.top.replace('px', ''));
-
-        if (bombY >= targetRect.top && bombY <= targetRect.bottom &&
-            parseInt(bomb.style.left.replace('px', '')) >= targetRect.left &&
-            parseInt(bomb.style.left.replace('px', '')) <= targetRect.right) {
-            // 當炸彈擊中目標時
-            clearInterval(bombInterval);
-            bomb.classList.add('hidden');
-            score++;
-            scoreDisplay.textContent = `得分: ${score}`;
-            bombThrown = false;
-            moveTarget(); // 目標移動
-        }
-
-        if (bombY >= gameArea.offsetHeight) {
-            // 如果炸彈掉到畫面底部，重置
-            clearInterval(bombInterval);
-            bomb.classList.add('hidden');
-            bombThrown = false;
-        } else {
-            bomb.style.top = `${bombY + 10}px`; // 炸彈下落
-        }
-    }, 20);
-}
-
-// 設定目標位置初始移動
-moveTarget();
-
-// 每次按鈕點擊，丟炸彈並觸發事件
-throwBombBtn.addEventListener('click', () => {
-    throwBomb();
-    moveTarget(); // 每次丟炸彈後，隨機移動目標
-});
