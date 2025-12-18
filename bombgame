@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>炸彈擊中目標遊戲</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>炸彈擊中目標遊戲</h1>
+        <p>按下「丟炸彈」開始遊戲，擊中目標得分！</p>
+    </header>
+
+    <div id="gameArea">
+        <div id="target"></div>
+        <div id="bomb" class="hidden"></div>
+    </div>
+
+    <footer>
+        <button id="throwBombBtn">丟炸彈</button>
+        <p id="score">得分: 0</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
