@@ -50,15 +50,39 @@
             margin-top: 10px;
         }
 
-        p {
-            color: #555;
+        #time {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        #gameOver {
+            font-size: 24px;
+            color: #d32f2f;
+            margin-top: 15px;
+            display: none;
+        }
+
+        #restartBtn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none;
+        }
+
+        #restartBtn:hover {
+            background-color: #1976D2;
         }
     </style>
 </head>
 <body>
 
     <h1>💣 點擊丟炸彈小遊戲</h1>
-    <p>目標會越來越快，挑戰你的反應力！</p>
+    <p>60 秒內擊中越多目標越好！</p>
 
     <div id="gameArea">
         <div id="target"></div>
@@ -67,8 +91,12 @@
 
     <div id="info">
         分數：<span id="score">0</span>　
-        最高分：<span id="highScore">0</span>
+        最高分：<span id="highScore">0</span>　
+        剩餘時間：<span id="time">60</span> 秒
     </div>
+
+    <div id="gameOver">⏰ 時間到！</div>
+    <button id="restartBtn">🔁 重新開始</button>
 
     <script>
         const gameArea = document.getElementById("gameArea");
@@ -76,21 +104,61 @@
         const bomb = document.getElementById("bomb");
         const scoreText = document.getElementById("score");
         const highScoreText = document.getElementById("highScore");
+        const timeText = document.getElementById("time");
+        const gameOverText = document.getElementById("gameOver");
+        const restartBtn = document.getElementById("restartBtn");
 
         let score = 0;
         let throwing = false;
+        let gameActive = false;
+        let timer;
 
-        // 讀取最高分
+        // 最高分
         let highScore = localStorage.getItem("highScore") || 0;
         highScoreText.textContent = highScore;
 
-        // 目標位置與速度
-        let targetX = 100;
-        let targetY = 100;
-        let targetVX = 2;
-        let targetVY = 2;
+        // 目標狀態
+        let targetX, targetY, targetVX, targetVY;
+
+        function startGame() {
+            score = 0;
+            scoreText.textContent = score;
+
+            gameActive = true;
+            throwing = false;
+
+            targetX = 100;
+            targetY = 100;
+            targetVX = 2;
+            targetVY = 2;
+
+            gameOverText.style.display = "none";
+            restartBtn.style.display = "none";
+
+            timeLeft = 60;
+            timeText.textContent = timeLeft;
+
+            clearInterval(timer);
+            timer = setInterval(() => {
+                timeLeft--;
+                timeText.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(timer);
+            gameOverText.style.display = "block";
+            restartBtn.style.display = "inline-block";
+        }
 
         function moveTarget() {
+            if (!gameActive) return;
+
             const maxX = gameArea.clientWidth - 50;
             const maxY = gameArea.clientHeight - 50;
 
@@ -107,7 +175,7 @@
         setInterval(moveTarget, 20);
 
         gameArea.addEventListener("click", function (e) {
-            if (throwing) return;
+            if (!gameActive || throwing) return;
             throwing = true;
 
             const rect = gameArea.getBoundingClientRect();
@@ -145,11 +213,9 @@
                     score++;
                     scoreText.textContent = score;
 
-                    // ⭐ 難度提升：目標加速
                     targetVX *= 1.1;
                     targetVY *= 1.1;
 
-                    // ⭐ 更新最高分
                     if (score > highScore) {
                         highScore = score;
                         localStorage.setItem("highScore", highScore);
@@ -170,7 +236,13 @@
                 steps++;
             }, 20);
         });
+
+        restartBtn.addEventListener("click", startGame);
+
+        // 預設先開始一局
+        startGame();
     </script>
 
 </body>
 </html>
+
