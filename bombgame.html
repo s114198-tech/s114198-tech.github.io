@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>炸彈擊中目標小遊戲</title>
+    <title>點擊丟炸彈小遊戲</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -24,6 +24,7 @@
             margin: 20px auto;
             background-color: #ddd;
             border: 3px solid #333;
+            cursor: crosshair;
             overflow: hidden;
         }
 
@@ -44,37 +45,26 @@
             display: none;
         }
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
         #score {
             font-size: 18px;
             margin-top: 10px;
+        }
+
+        p {
+            color: #555;
         }
     </style>
 </head>
 <body>
 
-    <h1>💣 炸彈擊中目標小遊戲</h1>
-    <p>點擊按鈕丟炸彈，擊中紅色目標得分！</p>
+    <h1>💣 點擊丟炸彈小遊戲</h1>
+    <p>點擊灰色區域，把炸彈丟向目標！</p>
 
     <div id="gameArea">
         <div id="target"></div>
         <div id="bomb"></div>
     </div>
 
-    <button onclick="throwBomb()">丟炸彈</button>
     <div id="score">得分：0</div>
 
     <script>
@@ -90,25 +80,35 @@
             const maxX = gameArea.clientWidth - 50;
             const maxY = gameArea.clientHeight - 50;
 
-            const x = Math.random() * maxX;
-            const y = Math.random() * maxY;
-
-            target.style.left = x + "px";
-            target.style.top = y + "px";
+            target.style.left = Math.random() * maxX + "px";
+            target.style.top = Math.random() * maxY + "px";
         }
 
-        function throwBomb() {
+        gameArea.addEventListener("click", function (e) {
             if (throwing) return;
             throwing = true;
 
-            bomb.style.display = "block";
-            bomb.style.left = (gameArea.clientWidth / 2 - 10) + "px";
-            bomb.style.top = "0px";
+            const rect = gameArea.getBoundingClientRect();
+            const targetX = e.clientX - rect.left - 10;
+            const targetY = e.clientY - rect.top - 10;
 
+            let bombX = gameArea.clientWidth / 2 - 10;
             let bombY = 0;
 
+            bomb.style.left = bombX + "px";
+            bomb.style.top = bombY + "px";
+            bomb.style.display = "block";
+
+            const dx = (targetX - bombX) / 30;
+            const dy = (targetY - bombY) / 30;
+
+            let steps = 0;
+
             const interval = setInterval(() => {
-                bombY += 8;
+                bombX += dx;
+                bombY += dy;
+
+                bomb.style.left = bombX + "px";
                 bomb.style.top = bombY + "px";
 
                 const bombRect = bomb.getBoundingClientRect();
@@ -128,15 +128,16 @@
                     randomTargetPosition();
                 }
 
-                if (bombY > gameArea.clientHeight) {
+                if (steps > 30) {
                     clearInterval(interval);
                     bomb.style.display = "none";
                     throwing = false;
                 }
-            }, 20);
-        }
 
-        // 遊戲開始時先放一個目標
+                steps++;
+            }, 20);
+        });
+
         randomTargetPosition();
     </script>
 
