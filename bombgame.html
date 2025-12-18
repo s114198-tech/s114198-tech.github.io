@@ -98,3 +98,72 @@ footer {
 .hidden {
     display: none;
 }
+
+// 初始化遊戲狀態
+let score = 0;
+let bombThrown = false;
+
+// 取得 HTML 元素
+const throwBombBtn = document.getElementById('throwBombBtn');
+const target = document.getElementById('target');
+const bomb = document.getElementById('bomb');
+const scoreDisplay = document.getElementById('score');
+const gameArea = document.getElementById('gameArea');
+
+// 目標隨機位置移動
+function moveTarget() {
+    const gameAreaWidth = gameArea.offsetWidth;
+    const gameAreaHeight = gameArea.offsetHeight;
+
+    const randomX = Math.random() * (gameAreaWidth - 50); // 隨機水平位置
+    const randomY = Math.random() * (gameAreaHeight - 50); // 隨機垂直位置
+
+    target.style.left = `${randomX}px`;
+    target.style.top = `${randomY}px`;
+}
+
+// 丟炸彈並處理目標擊中邏輯
+function throwBomb() {
+    if (bombThrown) return;
+
+    bombThrown = true;
+    bomb.classList.remove('hidden');
+    bomb.style.top = '50px'; // 起始位置在上方
+
+    const targetRect = target.getBoundingClientRect();
+    const bombRect = bomb.getBoundingClientRect();
+
+    const bombInterval = setInterval(() => {
+        const bombY = parseInt(bomb.style.top.replace('px', ''));
+
+        if (bombY >= targetRect.top && bombY <= targetRect.bottom &&
+            parseInt(bomb.style.left.replace('px', '')) >= targetRect.left &&
+            parseInt(bomb.style.left.replace('px', '')) <= targetRect.right) {
+            // 當炸彈擊中目標時
+            clearInterval(bombInterval);
+            bomb.classList.add('hidden');
+            score++;
+            scoreDisplay.textContent = `得分: ${score}`;
+            bombThrown = false;
+            moveTarget(); // 目標移動
+        }
+
+        if (bombY >= gameArea.offsetHeight) {
+            // 如果炸彈掉到畫面底部，重置
+            clearInterval(bombInterval);
+            bomb.classList.add('hidden');
+            bombThrown = false;
+        } else {
+            bomb.style.top = `${bombY + 10}px`; // 炸彈下落
+        }
+    }, 20);
+}
+
+// 設定目標位置初始移動
+moveTarget();
+
+// 每次按鈕點擊，丟炸彈並觸發事件
+throwBombBtn.addEventListener('click', () => {
+    throwBomb();
+    moveTarget(); // 每次丟炸彈後，隨機移動目標
+});
